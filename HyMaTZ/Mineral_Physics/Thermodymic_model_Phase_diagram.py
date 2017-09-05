@@ -8,7 +8,7 @@ Created on Sun Oct  9 16:26:26 2016
 
 import os
 import numpy as np
-
+import zipfile
 '''
 This file store Thermodynamics Model from Perplex
 '''
@@ -61,12 +61,12 @@ class Harzburgite_Phase():
         '''
         try:
             #self.directory =os.path.dirname(os.path.realpath('__Main__'))
-            self.address = os.path.join( self.directory , 'Models',self.name,self.name+'_3.txt')
-            file=open(self.address)
+            self.address = os.path.join( self.directory , 'Models',self.name,self.name+'_3.zip')
+            z = zipfile.ZipFile(self.address)
+            file=z.open(self.name+'_3.txt')
             
         except:
-            #pass
-            self.address = os.path.join( 'E:\\', 'Models',self.name,self.name+'_3.txt')
+            self.address = os.path.join( self.directory , 'Models',self.name,self.name+'_3.txt')
             file=open(self.address)
 
         try:
