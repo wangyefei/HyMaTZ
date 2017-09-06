@@ -383,7 +383,7 @@ class MantleDlg(QDialog):
         layout.addWidget(self.BTN_Mantle_cambo,1,1,1,1)
         layout.addWidget(self.BTN_Mantle_cambo1,0,1,1,1)
         self.setLayout(layout)
-        self.setWindowTitle("Mantle Properties")
+        self.setWindowTitle("Mantle composition as a physical mixture of:")
         self.resize(100,50)
 
     
@@ -523,6 +523,10 @@ class MantleDlg(QDialog):
         self.a2=a
         
     def OK(self):
+        a = self.BTN_Mantle_cambo.currentIndex()
+        self.Model_select(a)
+        a1 = self.BTN_Mantle_cambo1.currentIndex()
+        self.Model_select1(a1)        
         self.composition = self.Model_composition*self.value/100+self.Model_composition1*(1-self.value/100)
         self.close()
         
