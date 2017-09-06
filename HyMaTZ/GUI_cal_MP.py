@@ -27,28 +27,7 @@ from Mineral_Physics.Stix2011data import (OL,WA,RI,ab,an,sp,hc,fo,fa,mgwa,fewa,m
                           ,fecf ,nacf,ky,neph,OL_,WA_,RI_ )
 
 g= scipy.constants.g
-#==============================================================================
-# directory =os.path.dirname(os.path.abspath('__file__'))
-# address = os.path.join( directory,'Mineral_Physics','fort.56.txt')
-# file = open(address)
-# DD=[]
-# PP=[]
-# VVPP=[]
-# VVSS=[]
-# RRho=[]
-# TT=[]
-# #next(file)
-# for line in file:
-#     line = line.split()
-#     DD.append(float(line[1]))
-#     PP.append(float(line[0]))
-#     VVSS.append(float(line[5]))
-#     VVPP.append(float(line[6]))     
-#     RRho.append(float(line[3]))  
-#     TT.append(float(line[2]))
-# file.close()  
-#==============================================================================
-      
+
 class Phase_diagram():
     
     def __init__(self,composition=None,num=300,Model =None,Model_composition = None,index_P=600,index_T=400):
