@@ -136,7 +136,7 @@ class Harzburgite():
         dictionary=dict()
         for i in self.Name:
             dictionary[i]=(self.dictionary[i]+other.dictionary[i])
-        Model=Harzburgite( [0,0,0,0,0,0],'Harzburgite10',240000,600,400) 
+        Model=Harzburgite( [0,0,0,0,0,0],'Harzburgite10',240000,600,400,address=self.directory) 
         Model.dictionary=dictionary
         return Model
     
@@ -145,7 +145,7 @@ class Harzburgite():
         self.present*=other
         for i in self.Name:
             dictionary[i]=self.dictionary[i]*other
-        Model=Harzburgite( [0,0,0,0,0,0],'Harzburgite10',240000,600,400) 
+        Model=Harzburgite( [0,0,0,0,0,0],'Harzburgite10',240000,600,400,address=self.directory) 
         Model.dictionary=dictionary            
         return Model     
     

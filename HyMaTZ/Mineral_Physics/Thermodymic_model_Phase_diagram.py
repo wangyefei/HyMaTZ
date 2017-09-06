@@ -24,6 +24,8 @@ class Harzburgite_Phase():
         self.index_P=index_P
         self.index_T=index_T
         self.directory = address
+        self.index_P = index_P
+        self.index_T = index_T
         if composition is None:
             composition =[0,0,0,0,0,0]
         self.composition={
@@ -66,8 +68,8 @@ class Harzburgite_Phase():
             file=z.open(self.name+'_3.txt')
             
         except:
-            self.address = os.path.join( self.directory , 'Models',self.name,self.name+'_3.txt')
-            file=open(self.address)
+            self.address1 = os.path.join( self.directory , 'Models',self.name,self.name+'_3.txt')
+            file=open(self.address1)
 
         try:
             file.next();linecount=0
@@ -124,16 +126,16 @@ class Harzburgite_Phase():
         nacf=41;pe=42;wu=43;qtz=44;coes=45;st=46;apbo=47;ky=48;neph=49; #apbo neph did not found
         
     
-    def __add__(self,other):
+    def __add__(self,other):        
         storage=(self.storage+other.storage)
-        Model=Harzburgite_Phase( [0,0,0,0,0,0],'Harzburgite100') 
+        Model=Harzburgite_Phase( [0,0,0,0,0,0],'Harzburgite100',address=self.directory) 
         Model.storage=storage
         return Model
     
     def __mul__(self,other):
         self.present*=other
         storage=self.storage*other
-        Model=Harzburgite_Phase( [0,0,0,0,0,0],'Harzburgite100') 
+        Model=Harzburgite_Phase( [0,0,0,0,0,0],'Harzburgite100',address=self.directory) 
         Model.storage=storage          
         return Model 
 
