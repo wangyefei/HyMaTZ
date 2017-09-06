@@ -1119,6 +1119,13 @@ class MainWindow(QMainWindow):
                           nacf,pe,wu,qtz,coes,st,an,ky,neph,OL,WA,RI]        
             for i in mineral_list:
                 i.Clear_Vp_Vs()
+            
+            try:
+                a = self.dialog.OL_water[0]
+            except:
+                self.showdialog(message1="Please set up water profile",message2="Please set up water profile")
+                return None    
+
             for number,phase in enumerate(self.Phase_diagram):
 
                 #OL.Set_Water_Iron_Condition(self.ol_water[number],self.fo[num])
@@ -1127,7 +1134,7 @@ class MainWindow(QMainWindow):
                 #phase[26]=0;phase[27]=0
                # phase[28]=0;phase[29]=0
 
-    
+                    
                 OL.Set_Water_Iron_Condition(self.dialog.OL_water[number],1-self.fo[number])
                 WA.Set_Water_Iron_Condition(self.dialog.WA_water[number],1-self.mgwa[number])
                 RI.Set_Water_Iron_Condition(self.dialog.RI_water[number],1-self.mgri[number]) 
