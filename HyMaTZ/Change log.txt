@@ -1,0 +1,5 @@
+Release Version 2.1 (09/04/2017)
+	1 Updated plotting function so that the 410, 520 km discontinuities no longer show as two lines but only as one line and the plot also shows the pressure 		scale. 
+	2 Added "layer model" function.
+	3 Added the function to define the iron content profile.
+	4 Added attenuation functions (of the seismic velocities).
