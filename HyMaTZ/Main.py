@@ -87,9 +87,9 @@ class MainWindow(QMainWindow):
         self.dialoga1 = None
         self.dialoga2 = None
         self.dialogvalue = None
-        self.olflag = '11111111111111111'
-        self.waflag = '1111111111111111'
-        self.riflag = '1111111111111'
+        self.olflag = '1111'
+        self.waflag = '1111111111'
+        self.riflag = '111111111'
         self.OLOL = None
         self.WAWA = None
         self.RIRI = None
