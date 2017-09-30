@@ -183,15 +183,18 @@ class Regression(object):
             if i> len(self.Flag):
                 break
             self.Flag[i]=float(flag[i])
+        del_num = 0
         for i in range(len(self.Flag)):
             if self.Flag[i] == 0:
-                del self.water_content[i]
-                del self.iron_content[i]
-                del self.K[i]
-                del self.G[i]
-                del self.Rho[i]
-                del self.reference[i]
-                self.number_of_data = len(self.K)
+                del self.water_content[i-del_num]
+                del self.iron_content[i-del_num]
+                del self.K[i-del_num]
+                del self.G[i-del_num]
+                del self.Rho[i-del_num]
+                del self.reference[i-del_num]
+                del_num  += 1
+        
+        self.number_of_data = len(self.K)
         return None
 
     def Return(self):
@@ -236,7 +239,8 @@ class Regression(object):
         self.G=dictionary['G']
         self.Rho=dictionary['Rho']
         self.reference = dictionary['Author']
-        self.number_of_data=len(self.K)        
+        self.number_of_data=len(self.K)     
+        #print (len(self.water_content))   
         return name,dictionary  
     
 
