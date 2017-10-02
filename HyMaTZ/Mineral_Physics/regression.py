@@ -56,7 +56,18 @@ class FigureCanvas3D(FigureCanvas):
     This class modify FigureCanvas from matplotlib package, and modify to show 3D plots
     '''
     def __init__(self,input1):
-        X,Y,Z,a,b,c,d,strz,strx = input1
+        x,y,z,a,b,c,d,strz,strx = input1
+        
+        X=[];Y=[];Z=[]
+        for i in range(len(z)):
+            if isinstance(z[i], float):
+                Z.append(float(z[i]))
+                X.append(float(x[i]))
+                Y.append(float(y[i]))
+            else:
+                pass
+                
+        
         self.fig = Figure(dpi=70)
         #self.fig.suptitle("this is  the  figure  title",  fontsize=12)
         FigureCanvas.__init__(self, self.fig)
@@ -149,7 +160,15 @@ class Regression(object):
         """
         Do the regression, here use ODR package from Scipy which use orthogonal distance regression
         """
-        data=RealData([x,y],z)#,sx=[x_error,y_error],sy=z_error)
+        X=[];Y=[];Z=[]
+        for i in range(len(z)):
+            if isinstance(z[i], float):
+                Z.append(float(z[i]))
+                X.append(float(x[i]))
+                Y.append(float(y[i]))
+            else:
+                pass
+        data=RealData([X,Y],Z)#,sx=[x_error,y_error],sy=z_error)
         def func(beta,data):
             x,y = data
             a,b,c = beta
@@ -386,7 +405,7 @@ class Regression_PLOT_PyQt(QDialog):
         self.Minerals.original_flag()
         self.Minerals.read_data()
         self.table = QTableView()
-        self.model = QStandardItemModel(25,7,self)
+        self.model = QStandardItemModel(self)
         self.model.setHorizontalHeaderLabels(['flag','Water Content','Iron Content','K (Gpa)','G (Gpa)', 'Rho (g/cm³)','Reference'])
         for i in range(len(self.Minerals.Flag)):
                 a=self.Minerals.Return_original_data(i)
@@ -521,20 +540,20 @@ class Regression_PLOT_PyQt(QDialog):
             #print (params)
             self.Minerals.Change_data_from_table(params)
             #print ('wf')
-        else:          
+        else:       
+            self.Minerals.read_data()
+            self.model.clear()
             self.model.setHorizontalHeaderLabels(['flag','Water Content','Iron Content','K (Gpa)','G (Gpa)', 'Rho (g/cm3)','Reference'])
             for i in range(len(self.Minerals.Flag)):
-                #a=self.Minerals.Return_original_data(i)
+                a=self.Minerals.Return_original_data(i)
                 item = QStandardItem(str(self.Minerals.Flag[i]))
                 self.model.setItem(i, 0,item)  
-#==============================================================================
-#                 for j in range(1,7):
-#                     item = QStandardItem(str(a[j]))
-#                     self.model.setItem(i, j,item)  
-#                     if j != 0:
-#                         item.setFlags(Qt.ItemIsEnabled)
-#                         item.setBackground(QColor(211,211,211))
-#==============================================================================
+                for j in range(1,7):
+                    item = QStandardItem(str(a[j]))
+                    self.model.setItem(i, j,item)  
+                    if j != 0:
+                        item.setFlags(Qt.ItemIsEnabled)
+                        item.setBackground(QColor(211,211,211))
                         
         #print (self.Minerals.Change)     
             
@@ -606,6 +625,7 @@ class Regression_PLOT_PyQt(QDialog):
                 pass
         self.Minerals.read_data()        
         self.PLOT()
+        print ('export')
         
     def ReturnString(self):
         aa = self.Minerals.Flag
@@ -624,10 +644,10 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(olivine,["-4.23*CWater+9.96*XFe+128.27,K'=4.217",
+    app = Regression_PLOT_PyQt(wadsleyte,["-4.23*CWater+9.96*XFe+128.27,K'=4.217",
  "-2.36*CWater-30.20*XFe+81.14,G'=4.217",
  '-301.14*CWater+142.69*XFe+3313.46',
- True],flag='1111111111111111')
+ True],flag='11111')
     app.show()
     sys.exit(qApp.exec_())        
     
