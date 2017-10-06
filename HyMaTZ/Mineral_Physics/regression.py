@@ -3,7 +3,6 @@
 Created on Wed Aug 17 15:59:28 2016
 This class contian GUI to do the regression and retun results
 @author: Fei
-
 Update 10/3/2016
 """
 
@@ -14,11 +13,12 @@ import sys
 import os
 import re
 import numpy as np
-from scipy.odr import ODR, Model, RealData
+from scipy.odr import ODR, Model, RealData,Data
+from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-
+import functools
 try:
     from PyQt4.QtCore import (PYQT_VERSION_STR, QFile, QFileInfo, QSettings,
             QT_VERSION_STR, QTimer, QVariant, Qt, SIGNAL)
@@ -60,12 +60,24 @@ class FigureCanvas3D(FigureCanvas):
         
         X=[];Y=[];Z=[]
         for i in range(len(z)):
-            if isinstance(z[i], float):
+            try:
                 Z.append(float(z[i]))
                 X.append(float(x[i]))
                 Y.append(float(y[i]))
-            else:
-                pass
+            except:
+                pass                
+#==============================================================================
+#             try:
+#                 z[i] = float(z[i])
+#             except:
+#                 pass
+#             if isinstance(z[i], float):
+#                 Z.append(float(z[i]))
+#                 X.append(float(x[i]))
+#                 Y.append(float(y[i]))
+#             else:
+#                 pass
+#==============================================================================
                 
         
         self.fig = Figure(dpi=70)
@@ -76,7 +88,8 @@ class FigureCanvas3D(FigureCanvas):
             QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.ax = Axes3D(self.fig) # Canvas figure must be created for mouse rotation
-        self.ax.scatter3D(X,Y,Z,c='black', picker=5)           
+        self.ax.scatter3D(X,Y,Z,c='black', picker=5)   
+        #print (X,Y,Z)        
         X1=np.arange(0.9*np.amin(X),1.1*np.amax(X),0.1)
         Y1=np.arange(0.9*np.amin(Y),1.1*np.amax(Y),0.1)
         X1,Y1= np.meshgrid(X1, Y1,sparse=True)
@@ -156,27 +169,89 @@ class Regression(object):
             self.Flag = [1,1,1,1,1,1,1,1,1,1,1,1,1]
         
     
-    def Regression_Plane(self,x,x_error,y,y_error,z,z_error):
+    def Regression_Plane(self,x,x_error,y,y_error,z,z_error,methods=1):
         """
         Do the regression, here use ODR package from Scipy which use orthogonal distance regression
         """
-        X=[];Y=[];Z=[]
+        X=[];Y=[];Z=[];X_error=[];Y_error=[];Z_error=[]
         for i in range(len(z)):
-            if isinstance(z[i], float):
+            try:
                 Z.append(float(z[i]))
                 X.append(float(x[i]))
                 Y.append(float(y[i]))
-            else:
-                pass
-        data=RealData([X,Y],Z)#,sx=[x_error,y_error],sy=z_error)
-        def func(beta,data):
-            x,y = data
-            a,b,c = beta
-            return a*x+b*y+c    
-        model = Model(func)
-        odr = ODR(data, model,[100,100,100])
-        res = odr.run()
-        return res.beta, res.sd_beta    
+                X_error.append(float(x_error[i]))
+                Y_error.append(float(y_error[i]))
+                Z_error.append(float(z_error[i]))
+            except:
+                pass 
+            
+        if methods==1:
+            #data=RealData([X,Y],Z)#,sx=[x_error,y_error],sy=z_error)
+            data = Data([X,Y],Z,wd=[1,1])
+            def func(beta,data):
+                x,y = data
+                a,b,c = beta
+                return a*x+b*y+c    
+            model = Model(func)
+            odr = ODR(data, model,[100,100,100])
+            res = odr.run()
+            #print ('dond odr')
+            return res.beta, res.sd_beta    
+        
+        elif methods ==0 :
+            
+            def plane_method(x2, y2, params):
+                a = params[0]
+                b = params[1]
+                c = params[2]
+                z = a*x2 + b*y2 + c
+                #print (x2,y2)
+                return z
+        
+            def error_method(params, points):
+                result = []
+                for (x1,y1,z1) in points:
+                    #up = np.abs(params[0]*x+params[1]*y -z +params[2])
+                    #down = np.sqrt(params[0]**2 +params[1]**2 +1)
+                    plane_z = plane_method(x1, y1, params)
+                    #print (plane_z)
+                    diff = abs(plane_z - z1)
+                    #diff = up/down
+                    result .append( diff**2)
+                return result
+
+            points=[]
+            for i in range(len(Z)):
+                points.append([X[i],Y[i],Z[i]])
+            #print (points)
+
+            fun = functools.partial(error_method, points=points)
+            params0 = [100, 100, 100]
+            res = leastsq(fun, params0,full_output=1)
+            cov = res[1]
+            perr = np.diag(cov)
+            #print (perr)
+            a = res[0][0]
+            b = res[0][1]
+            c = res[0][2]   
+            return [a,b,c],perr
+        
+        elif methods ==2:
+
+            data=RealData([X,Y],Z,sx=[X_error,Y_error],sy=Z_error)
+            #data = Data([X,Y],Z,wd=[1,100])
+            def func(beta,data):
+                x,y = data
+                a,b,c = beta
+                return a*x+b*y+c    
+            model = Model(func)
+            odr = ODR(data, model,[100,100,100])
+            res = odr.run()
+            #print ('dond odr eror')
+            return res.beta, res.sd_beta  
+        
+        else:
+            raise ('wrong regression')
     
     
     def Clean_content(self):
@@ -191,7 +266,7 @@ class Regression(object):
         
     def Return_original_data(self,num):
         #return data directly from txt file
-        return [self.Flag[num],self.water_content[num],self.iron_content[num],self.K[num],self.G[num],self.Rho[num],self.reference[num]]
+        return [self.Flag[num],self.dictionary['H2O'][num],self.dictionary['Iron'][num],self.dictionary['K'][num],self.dictionary['G'][num],self.dictionary['Rho'][num],self.reference[num]]
 
         
     def Change_data_from_table(self,flag):
@@ -220,14 +295,42 @@ class Regression(object):
         # based on user change return different data
         if self.Change == False:
             # return data without user input
-            return self.function_K(),self.function_G(),self.function_Rho()
+            return self.function_K(methods = self.regression_methods),self.function_G(methods = self.regression_methods),self.function_Rho(methods = self.regression_methods)
         else:
             # return data with user input 
             return self.UserK,self.UserG,self.UserRho
 
         
     def read_data(self):
-        # read data from txt file
+                
+        def Stinglist_float(string_list):
+            number_list=[]
+            
+            def string_float(string):
+                return_string = ''
+                for i in string:
+                    if i !=' ':
+                        return_string +=i
+                a=[(x) for x in re.split(r'[()]',string)]    
+                list1=[]
+                for i in a:
+                    try:
+                        list1.append(float(i))
+                    except:
+                        pass
+                if len(list1) ==1:
+                    list1.append(1e-2)
+                if len(list1) !=2:
+                    #print ('wrong input',list1)
+                    list1=['NA','NA']
+                return list1
+            
+            for i in string_list:
+                list1 = string_float(i)
+                number_list.append(list1)
+            aa=np.array(number_list)   
+            return aa[:,0],aa[:,1]              
+        
         try:
             address=os.path.join(os.path.dirname(__file__),'EXPDATA',self.name+'.txt')
             self.address=address
@@ -246,19 +349,44 @@ class Regression(object):
            line=line.split(',')
            #print (line)
            for i in range(len(line)):  
-               try:
-                   dictionary[name[i]].append(float(line[i]))
-               except:
+#==============================================================================
+#                try:
+#                    dictionary[name[i]].append(float(line[i]))
+#                except:
+#==============================================================================
                    dictionary[name[i]].append((line[i])) 
         file.close()
+        
+        
+        
+        self.dictionary = dictionary
         self.Flag = dictionary['Flag']
-        self.water_content=dictionary['H2O'];
-        self.iron_content=dictionary['Iron']
-        self.K=dictionary['K']
-        self.G=dictionary['G']
-        self.Rho=dictionary['Rho']
+        
+        a,b = Stinglist_float(dictionary['H2O'])
+        self.water_content=a;
+        self.water_content_error = b
+        
+        a,b = Stinglist_float(dictionary['Iron'])
+        self.iron_content=a
+        self.iron_content_error = b
+        
+        a,b = Stinglist_float(dictionary['K'])
+        self.K = a
+        self.K_error=b
+        
+        
+        a,b = Stinglist_float(dictionary['G'])
+        self.G = a
+        self.G_error=b
+        
+        a,b = Stinglist_float(dictionary['Rho'])
+        self.Rho = a
+        self.Rho_error=b
         self.reference = dictionary['Author']
         self.number_of_data=len(self.K)     
+        
+        
+        
         #print (len(self.water_content))   
         return name,dictionary  
     
@@ -273,15 +401,15 @@ class Regression(object):
     '''
     3 functions that return regression coefficient 
     '''
-    def function_K(self):
+    def function_K(self,methods =1 ):
         return self.Regression_Plane(self.water_content,self.water_content_error,
-                    self.iron_content,self.iron_content_error,self.K,self.K_error)     
-    def function_G(self):
+                    self.iron_content,self.iron_content_error,self.K,self.K_error,methods=methods)     
+    def function_G(self,methods =1):
         return self.Regression_Plane(self.water_content,self.water_content_error,
-                    self.iron_content,self.iron_content_error,self.G,self.G_error) 
-    def function_Rho(self):
+                    self.iron_content,self.iron_content_error,self.G,self.G_error,methods=methods) 
+    def function_Rho(self,methods =1):
         return self.Regression_Plane(self.water_content,self.water_content_error,
-                    self.iron_content,self.iron_content_error,self.Rho,self.Rho_error) 
+                    self.iron_content,self.iron_content_error,self.Rho,self.Rho_error,methods=methods) 
 
     
     def Show_fit_function(self,beta,sd_beta,name,error=True):
@@ -319,7 +447,7 @@ class Regression(object):
         
     
         
-    def PLOT(self,return_fig=True):  
+    def PLOT(self,return_fig=True,methods=1):  
         '''
         This function return PLOT using data from table 
         '''
@@ -330,13 +458,13 @@ class Regression(object):
             self.pressure_deri = [4.322,1.444]
         if self.name == 'Ringwoodite':
             self.pressure_deri = [4.22,1.354]
-        self.str1=self.Show_fit_function(self.function_K()[0],self.function_K()[1],'')
-        self.str2=self.Show_fit_function(self.function_G()[0],self.function_G()[1],'')
-        self.str3=self.Show_fit_function(self.function_Rho()[0],self.function_Rho()[1],'')
+        self.str1=self.Show_fit_function(self.function_K(methods = methods)[0],self.function_K(methods = methods)[1],'')
+        self.str2=self.Show_fit_function(self.function_G(methods = methods)[0],self.function_G(methods = methods)[1],'')
+        self.str3=self.Show_fit_function(self.function_Rho(methods = methods)[0],self.function_Rho(methods = methods)[1],'')
                 
-        self.d1,self.b1,self.c1,self.a1=0,self.function_K()[0][0],self.function_K()[0][1],self.function_K()[0][2]
-        self.d2,self.b2,self.c2,self.a2=0,self.function_G()[0][0],self.function_G()[0][1],self.function_G()[0][2]
-        self.d3,self.b3,self.c3,self.a3=0,self.function_Rho()[0][0],self.function_Rho()[0][1],self.function_Rho()[0][2]
+        self.d1,self.b1,self.c1,self.a1=0,self.function_K(methods = methods)[0][0],self.function_K(methods = methods)[0][1],self.function_K(methods = methods)[0][2]
+        self.d2,self.b2,self.c2,self.a2=0,self.function_G(methods = methods)[0][0],self.function_G(methods = methods)[0][1],self.function_G(methods = methods)[0][2]
+        self.d3,self.b3,self.c3,self.a3=0,self.function_Rho(methods = methods)[0][0],self.function_Rho(methods = methods)[0][1],self.function_Rho(methods = methods)[0][2]
         
         if return_fig ==True:        
             fig1=plot(self.water_content,self.iron_content,self.K,self.a1,self.b1,self.c1,self.d1,self.name+" Bulk modulus",self.str1)
@@ -429,7 +557,13 @@ class Regression_PLOT_PyQt(QDialog):
         self.button.setAutoDefault(False)
         self.button1 = QPushButton('Add data file ')
         self.button1.clicked.connect(self.Export)   
-        self.button1.setAutoDefault(False)        
+        self.button1.setAutoDefault(False)    
+        
+        self.Mehods_choice = QComboBox()
+        self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (without error)','Orthogonal distance regression (with error)'])
+        self.Mehods_choice.setCurrentIndex(2)
+        self.Mehods_choice.currentIndexChanged.connect(self.METHODS)
+        
         self.layout = QGridLayout()
 
 
@@ -449,9 +583,9 @@ class Regression_PLOT_PyQt(QDialog):
             self.Rhoinput_formula.setText(self.stringRho)
             self.Userinput()
         else:            
-            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K()[0],self.Minerals.function_K()[1],"K'",error=False))
-            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G()[0],self.Minerals.function_G()[1],"G'",error=False))
-            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho()[0],self.Minerals.function_Rho()[1],'',error=False))
+            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods = self.regression_methods)[0],self.Minerals.function_K(methods = self.regression_methods)[1],"K'",error=False))
+            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = self.regression_methods)[0],self.Minerals.function_G(methods = self.regression_methods)[1],"G'",error=False))
+            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = self.regression_methods)[0],self.Minerals.function_Rho(methods = self.regression_methods)[1],'',error=False))
         self.Kinput_formula.returnPressed.connect(self.Kformula)
         self.Ginput_formula.returnPressed.connect(self.Gformula)
         self.Rhoinput_formula.returnPressed.connect(self.Rhoformula)
@@ -491,10 +625,12 @@ class Regression_PLOT_PyQt(QDialog):
         self.check_change.toggled.connect(self.extension.setVisible)
         
         #self.PLOT(switch=True)
+        self.regression_methods=0
         self.PLOT()   
         self.layout.addWidget(self.table,0,1,1,17)
         self.layout.addWidget(self.button,2,0,1,9)
-        self.layout.addWidget(self.button1,2,9,1,9)
+        self.layout.addWidget(self.button1,2,9,1,4)
+        self.layout.addWidget(self.Mehods_choice,2,16,1,1)
         self.layout.addWidget(self.check_change,3,0,1,1)
         self.layout.addWidget(self.label,3,3,1,5)
         self.layout.addWidget(self.extension,4,0,1,9)        
@@ -522,7 +658,8 @@ class Regression_PLOT_PyQt(QDialog):
         self.user_input=True
         self.PLOT()
   
-
+    def METHODS(self,a):
+        self.regression_methods=a
     
         
     def PLOT(self,switch=True):
@@ -559,11 +696,11 @@ class Regression_PLOT_PyQt(QDialog):
             
             
         if self.user_input == False:
-            self.a,self.b,self.c = self.Minerals.PLOT(return_fig=False)       
+            self.a,self.b,self.c = self.Minerals.PLOT(return_fig=False,methods=self.regression_methods)       
             #print (self.Minerals.number_of_data)
-            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K()[0],self.Minerals.function_K()[1],"K'",error=False))
-            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G()[0],self.Minerals.function_G()[1],"G'",error=False))
-            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho()[0],self.Minerals.function_Rho()[1],'',error=False))
+            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods = self.regression_methods)[0],self.Minerals.function_K(methods = self.regression_methods)[1],"K'",error=False))
+            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = self.regression_methods)[0],self.Minerals.function_G(methods = self.regression_methods)[1],"G'",error=False))
+            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = self.regression_methods)[0],self.Minerals.function_Rho(methods = self.regression_methods)[1],'',error=False))
 
         else:
             self.a,self.b,self.c = self.Minerals.PLOT_input_formula(return_fig=False)   
@@ -644,9 +781,9 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(wadsleyte,["-4.23*CWater+9.96*XFe+128.27,K'=4.217",
- "-2.36*CWater-30.20*XFe+81.14,G'=4.217",
- '-301.14*CWater+142.69*XFe+3313.46',
+    app = Regression_PLOT_PyQt(wadsleyte,["-8.86*CWater+26*XFe+169.08,K'=4.217",
+ "-5.17*CWater-59.31*XFe+113.28,G'=4.217",
+ '-47.10*CWater+1194.36*XFe+3473.60',
  True],flag='11111')
     app.show()
     sys.exit(qApp.exec_())        
@@ -658,18 +795,3 @@ if __name__ == "__main__":
 
 
 #print func(a[1][0],[0.1,0])#water==%,Iron<=1
-    
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
-    
-
