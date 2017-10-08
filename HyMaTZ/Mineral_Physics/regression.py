@@ -169,7 +169,7 @@ class Regression(object):
             self.Flag = [1,1,1,1,1,1,1,1,1,1,1,1,1]
         
     
-    def Regression_Plane(self,x,x_error,y,y_error,z,z_error,methods=1):
+    def Regression_Plane(self,x,x_error,y,y_error,z,z_error,methods=2):
         """
         Do the regression, here use ODR package from Scipy which use orthogonal distance regression
         """
@@ -291,11 +291,11 @@ class Regression(object):
         self.number_of_data = len(self.K)
         return None
 
-    def Return(self):
+    def Return(self,methods=2):
         # based on user change return different data
         if self.Change == False:
             # return data without user input
-            return self.function_K(methods = self.regression_methods),self.function_G(methods = self.regression_methods),self.function_Rho(methods = self.regression_methods)
+            return self.function_K(methods = methods),self.function_G(methods = methods),self.function_Rho(methods = methods)
         else:
             # return data with user input 
             return self.UserK,self.UserG,self.UserRho
@@ -401,13 +401,13 @@ class Regression(object):
     '''
     3 functions that return regression coefficient 
     '''
-    def function_K(self,methods =1 ):
+    def function_K(self,methods =2 ):
         return self.Regression_Plane(self.water_content,self.water_content_error,
                     self.iron_content,self.iron_content_error,self.K,self.K_error,methods=methods)     
-    def function_G(self,methods =1):
+    def function_G(self,methods =2):
         return self.Regression_Plane(self.water_content,self.water_content_error,
                     self.iron_content,self.iron_content_error,self.G,self.G_error,methods=methods) 
-    def function_Rho(self,methods =1):
+    def function_Rho(self,methods =2):
         return self.Regression_Plane(self.water_content,self.water_content_error,
                     self.iron_content,self.iron_content_error,self.Rho,self.Rho_error,methods=methods) 
 
@@ -561,7 +561,7 @@ class Regression_PLOT_PyQt(QDialog):
         
         self.Mehods_choice = QComboBox()
         self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (without error)','Orthogonal distance regression (with error)'])
-        self.Mehods_choice.setCurrentIndex(2)
+        self.Mehods_choice.setCurrentIndex(0)
         self.Mehods_choice.currentIndexChanged.connect(self.METHODS)
         
         self.layout = QGridLayout()
@@ -583,9 +583,9 @@ class Regression_PLOT_PyQt(QDialog):
             self.Rhoinput_formula.setText(self.stringRho)
             self.Userinput()
         else:            
-            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods = self.regression_methods)[0],self.Minerals.function_K(methods = self.regression_methods)[1],"K'",error=False))
-            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = self.regression_methods)[0],self.Minerals.function_G(methods = self.regression_methods)[1],"G'",error=False))
-            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = self.regression_methods)[0],self.Minerals.function_Rho(methods = self.regression_methods)[1],'',error=False))
+            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods = 2)[0],self.Minerals.function_K(methods = 2)[1],"K'",error=False))
+            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = 2)[0],self.Minerals.function_G(methods = 2)[1],"G'",error=False))
+            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = 2)[0],self.Minerals.function_Rho(methods = 2)[1],'',error=False))
         self.Kinput_formula.returnPressed.connect(self.Kformula)
         self.Ginput_formula.returnPressed.connect(self.Gformula)
         self.Rhoinput_formula.returnPressed.connect(self.Rhoformula)
@@ -781,10 +781,7 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(wadsleyte,["-8.86*CWater+26*XFe+169.08,K'=4.217",
- "-5.17*CWater-59.31*XFe+113.28,G'=4.217",
- '-47.10*CWater+1194.36*XFe+3473.60',
- True],flag='11111')
+    app = Regression_PLOT_PyQt(wadsleyte,flag='11111')
     app.show()
     sys.exit(qApp.exec_())        
     
