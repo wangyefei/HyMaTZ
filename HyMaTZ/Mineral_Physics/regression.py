@@ -91,7 +91,7 @@ class FigureCanvas3D(FigureCanvas):
         self.ax.scatter3D(X,Y,Z,c='black', picker=5)   
         #print (X,Y,Z)        
         X1=np.arange(0.9*np.amin(X),1.1*np.amax(X),0.1)
-        Y1=np.arange(0.9*np.amin(Y),1.1*np.amax(Y),0.1)
+        Y1=np.arange(0.9*np.amin(Y),1.2*np.amax(Y),0.05)
         X1,Y1= np.meshgrid(X1, Y1,sparse=True)
         Z1=b*X1+c*Y1+d*X1*Y1+a
         self.ax.plot_surface(X1,Y1,Z1,color='b',alpha=0.1)
