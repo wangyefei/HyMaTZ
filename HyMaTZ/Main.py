@@ -93,6 +93,9 @@ class MainWindow(QMainWindow):
         self.OLOL = None
         self.WAWA = None
         self.RIRI = None
+        self.olmethods=2
+        self.wamethods=2
+        self.rimethods=2
 
         self.Discontinuity410=None
         self.Discontinuity520=None
@@ -563,24 +566,24 @@ class MainWindow(QMainWindow):
             pass
         else:   
             if a == 1:
-                self.appOL = Regression_PLOT_PyQt(olivine,self.stringOL,self.olflag)
+                self.appOL = Regression_PLOT_PyQt(olivine,self.stringOL,self.olflag,self.olmethods)
                 if self.appOL.exec_():
                     pass
-                self.stringOL,self.olflag = self.appOL.ReturnString()
+                self.stringOL,self.olflag,self.olmethods = self.appOL.ReturnString()
                 #print (self.olflag)
 
             if a == 2:
-                self.appWA = Regression_PLOT_PyQt(wadsleyte,self.stringWA,self.waflag)
+                self.appWA = Regression_PLOT_PyQt(wadsleyte,self.stringWA,self.waflag,self.wamethods)
                 if self.appWA.exec_():
                     pass
-                self.stringWA,self.waflag= self.appWA.ReturnString()   
+                self.stringWA,self.waflag,self.wamethods= self.appWA.ReturnString()   
                 #print (self.waflag)
 
             if a == 3:
-                self.appRI = Regression_PLOT_PyQt(ringwoodite,self.stringRI,self.riflag)
+                self.appRI = Regression_PLOT_PyQt(ringwoodite,self.stringRI,self.riflag,self.rimethods)
                 if self.appRI.exec_():
                     pass
-                self.stringRI,self.riflag = self.appRI.ReturnString()
+                self.stringRI,self.riflag,self.rimethods = self.appRI.ReturnString()
             self.BTN_NAMs_cambo.setCurrentIndex(0)  
             #self.stringOL = self.appOL.ReturnString()         
             
