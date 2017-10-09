@@ -3,3 +3,6 @@ Release Version 2.1 (09/04/2017)
 	2 Added "layer model" function.
 	3 Added the function to define the iron content profile.
 	4 Added attenuation functions (of the seismic velocities).
+	
+Release Version 2.1 (10/09/2017)
+	1 Under "Modify the elastic properties of hydrous Mg2SiO4 phases" added 3 different regression analysis.
