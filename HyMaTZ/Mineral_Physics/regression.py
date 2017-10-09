@@ -132,6 +132,7 @@ class Regression(object):
         self.name=name
         self.key,self.content = self.read_data()
         self.Change=False
+        self.regression_methods = 2
         if flag is not None:
             for i in range(len(flag)):
                 if i> len(self.Flag):
@@ -234,7 +235,7 @@ class Regression(object):
             a = res[0][0]
             b = res[0][1]
             c = res[0][2]   
-            return [a,b,c],perr
+            return np.array([a,b,c]),np.array(perr)
         
         elif methods ==2:
 
@@ -278,6 +279,14 @@ class Regression(object):
                 break
             self.Flag[i]=float(flag[i])
         del_num = 0
+        
+        self.water_content = list(self.water_content)
+        self.iron_content= list(self.iron_content)
+        self.K = list(self.K)
+        self.G = list(self.G)
+        self.Rho = list(self.Rho)
+        self.reference = list(self.reference)
+        
         for i in range(len(self.Flag)):
             if self.Flag[i] == 0:
                 del self.water_content[i-del_num]
@@ -295,7 +304,7 @@ class Regression(object):
         # based on user change return different data
         if self.Change == False:
             # return data without user input
-            return self.function_K(methods = methods),self.function_G(methods = methods),self.function_Rho(methods = methods)
+            return self.function_K(methods = self.regression_methods),self.function_G(methods = self.regression_methods),self.function_Rho(methods = self.regression_methods)
         else:
             # return data with user input 
             return self.UserK,self.UserG,self.UserRho
@@ -451,6 +460,7 @@ class Regression(object):
         '''
         This function return PLOT using data from table 
         '''
+        self.regression_methods = methods
         self.Change = False
         if self.name == "Olivine":
             self.pressure_deri = [4.217,1.462]
@@ -518,12 +528,14 @@ class Regression_PLOT_PyQt(QDialog):
     """
     This calss return a PyQt GUI with a regression plot
     """       
-    def __init__(self,Minerals=None,string=None,flag = None):
+    def __init__(self,Minerals=None,string=None,flag = None,methods = 2):
         super(Regression_PLOT_PyQt, self).__init__()
         if string is not None:
             self.stringK,self.stringG,self.stringRho,self.user_input = string
         else:
             self.stringK=None;self.stringG=None;self.stringRho=None;self.user_input=False
+            
+        self.regression_methods=methods
         self.resize(1400, 600)
         self.Minerals = Minerals
 
@@ -561,7 +573,7 @@ class Regression_PLOT_PyQt(QDialog):
         
         self.Mehods_choice = QComboBox()
         self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (without error)','Orthogonal distance regression (with error)'])
-        self.Mehods_choice.setCurrentIndex(0)
+        self.Mehods_choice.setCurrentIndex(self.regression_methods)
         self.Mehods_choice.currentIndexChanged.connect(self.METHODS)
         
         self.layout = QGridLayout()
@@ -583,9 +595,9 @@ class Regression_PLOT_PyQt(QDialog):
             self.Rhoinput_formula.setText(self.stringRho)
             self.Userinput()
         else:            
-            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods = 2)[0],self.Minerals.function_K(methods = 2)[1],"K'",error=False))
-            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = 2)[0],self.Minerals.function_G(methods = 2)[1],"G'",error=False))
-            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = 2)[0],self.Minerals.function_Rho(methods = 2)[1],'',error=False))
+            self.Kinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_K(methods =self.regression_methods)[0],self.Minerals.function_K(methods = self.regression_methods)[1],"K'",error=False))
+            self.Ginput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_G(methods = self.regression_methods)[0],self.Minerals.function_G(methods = self.regression_methods)[1],"G'",error=False))
+            self.Rhoinput_formula.setText(self.Minerals.Show_fit_function(self.Minerals.function_Rho(methods = self.regression_methods)[0],self.Minerals.function_Rho(methods = self.regression_methods)[1],'',error=False))
         self.Kinput_formula.returnPressed.connect(self.Kformula)
         self.Ginput_formula.returnPressed.connect(self.Gformula)
         self.Rhoinput_formula.returnPressed.connect(self.Rhoformula)
@@ -625,7 +637,7 @@ class Regression_PLOT_PyQt(QDialog):
         self.check_change.toggled.connect(self.extension.setVisible)
         
         #self.PLOT(switch=True)
-        self.regression_methods=0
+        #self.regression_methods=0
         self.PLOT()   
         self.layout.addWidget(self.table,0,1,1,17)
         self.layout.addWidget(self.button,2,0,1,9)
@@ -769,7 +781,7 @@ class Regression_PLOT_PyQt(QDialog):
         bb=str(int(aa[0]))
         for i in range(1,len(aa)):
             bb+=str(int(aa[i]))
-        return [self.stringK,self.stringG,self.stringRho,self.user_input],bb
+        return [self.stringK,self.stringG,self.stringRho,self.user_input],bb,self.regression_methods
 
 
 
@@ -781,7 +793,7 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(wadsleyte,flag='11111')
+    app = Regression_PLOT_PyQt(olivine,flag='11111')
     app.show()
     sys.exit(qApp.exec_())        
     
