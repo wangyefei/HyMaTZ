@@ -55,15 +55,20 @@ class FigureCanvas3D(FigureCanvas):
     '''
     This class modify FigureCanvas from matplotlib package, and modify to show 3D plots
     '''
-    def __init__(self,input1):
+    def __init__(self,input1,error):
         x,y,z,a,b,c,d,strz,strx = input1
         
-        X=[];Y=[];Z=[]
+        x_error,y_error,z_error = error
+        
+        X=[];Y=[];Z=[];X_error=[];Y_error=[];Z_error=[];
         for i in range(len(z)):
             try:
                 Z.append(float(z[i]))
+                Z_error.append(float(z_error[i]))
                 X.append(float(x[i]))
+                X_error.append(float(x_error[i]))
                 Y.append(float(y[i]))
+                Y_error.append(float(y_error[i]))
             except:
                 pass                
 #==============================================================================
@@ -88,14 +93,18 @@ class FigureCanvas3D(FigureCanvas):
             QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.ax = Axes3D(self.fig) # Canvas figure must be created for mouse rotation
-        self.ax.scatter3D(X,Y,Z,c='black', picker=5)   
+        self.ellipsoid()
+        for i in range(len(X)):
+            self.ellipsoid(a=X[i],b=Y[i],c=Z[i],a_err=X_error[i],b_err=Y_error[i],c_err=Z_error[i])
+            
+        self.ax.scatter3D(X,Y,Z,c='b', picker=5)   
         #print (X,Y,Z)        
         X1=np.arange(0.9*np.amin(X),1.1*np.amax(X),0.1)
         Y1=np.arange(0.9*np.amin(Y),1.2*np.amax(Y),0.05)
         X1,Y1= np.meshgrid(X1, Y1,sparse=True)
         Z1=b*X1+c*Y1+d*X1*Y1+a
-        self.ax.plot_surface(X1,Y1,Z1,color='b',alpha=0.1)
-        self.ax.plot_wireframe(X1,Y1,Z1,color='b')
+        self.ax.plot_surface(X1,Y1,Z1,color='r',alpha=0.1)
+        #self.ax.plot_wireframe(X1,Y1,Z1,color='b')
         self.ax.set_xlabel("Water Content (wt%)",fontdict=font)
         self.ax.set_ylabel("Iron Content (mol%)",fontdict=font)#.set_fontsize(10)
         self.ax.set_zlabel(strz,fontdict=font)
@@ -107,6 +116,7 @@ class FigureCanvas3D(FigureCanvas):
         
         self.format_coord_org = self.ax.format_coord
         self.ax.format_coord = self.report_pixel
+        
     
     def report_pixel(self, xd, yd):
         s = self.format_coord_org(xd, yd)
@@ -119,7 +129,25 @@ class FigureCanvas3D(FigureCanvas):
             self.plots = []
             self.draw()
             
+    
+    def ellipsoid(self,a=1,b=1,c=1,a_err=0.01,b_err=0.0001,c_err=1):
 
+        
+        u = np.linspace(0, 2 * np.pi, 10)
+        v = np.linspace(0, np.pi, 10)
+        
+#==============================================================================
+#         if b_err <=0.001:
+#             b_err=0.01
+#==============================================================================
+        # Cartesian coordinates that correspond to the spherical angles:
+        # (this is the equation of an ellipsoid):
+        x = a_err * np.outer(np.cos(u), np.sin(v))+a
+        y = b_err * np.outer(np.sin(u), np.sin(v))+b
+        z = c_err * np.outer(np.ones_like(u), np.cos(v))+c
+        
+        # Plot:
+        self.ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
  
     
  
@@ -132,7 +160,7 @@ class Regression(object):
         self.name=name
         self.key,self.content = self.read_data()
         self.Change=False
-        self.regression_methods = 2
+        self.regression_methods = 1
         if flag is not None:
             for i in range(len(flag)):
                 if i> len(self.Flag):
@@ -186,7 +214,7 @@ class Regression(object):
             except:
                 pass 
             
-        if methods==1:
+        if methods==2:
             #data=RealData([X,Y],Z)#,sx=[x_error,y_error],sy=z_error)
             data = Data([X,Y],Z,wd=[1,1])
             def func(beta,data):
@@ -237,7 +265,7 @@ class Regression(object):
             c = res[0][2]   
             return np.array([a,b,c]),np.array(perr)
         
-        elif methods ==2:
+        elif methods ==1:
 
             data=RealData([X,Y],Z,sx=[X_error,Y_error],sy=Z_error)
             #data = Data([X,Y],Z,wd=[1,100])
@@ -248,7 +276,7 @@ class Regression(object):
             model = Model(func)
             odr = ODR(data, model,[100,100,100])
             res = odr.run()
-            #print ('dond odr eror')
+           # print ('dond odr eror')
             return res.beta, res.sd_beta  
         
         else:
@@ -485,6 +513,14 @@ class Regression(object):
             return [self.water_content,self.iron_content,self.K,self.a1,self.b1,self.c1,self.d1,self.name+" Bulk modulus",self.str1],[self.water_content,self.iron_content,self.G,self.a2,self.b2,self.c2,self.d2,self.name+" Shear modulus",self.str2],[self.water_content,self.iron_content,self.Rho,self.a3,self.b3,self.c3,self.d3,self.name+" Density",self.str3]
      
      
+    def Return_error(self):
+        a = self.water_content_error
+        b = self.iron_content_error
+        c = self.K_error
+        d = self.G_error
+        e = self.Rho_error
+        return [a,b,c],[a,b,d],[a,b,e]
+        
     def User_Change(self,K,G,Rho):
         self.Change = True
         self.UserK=K
@@ -528,7 +564,7 @@ class Regression_PLOT_PyQt(QDialog):
     """
     This calss return a PyQt GUI with a regression plot
     """       
-    def __init__(self,Minerals=None,string=None,flag = None,methods = 2):
+    def __init__(self,Minerals=None,string=None,flag = None,methods = 1):
         super(Regression_PLOT_PyQt, self).__init__()
         if string is not None:
             self.stringK,self.stringG,self.stringRho,self.user_input = string
@@ -572,7 +608,7 @@ class Regression_PLOT_PyQt(QDialog):
         self.button1.setAutoDefault(False)    
         
         self.Mehods_choice = QComboBox()
-        self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (without error)','Orthogonal distance regression (with error)'])
+        self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (with error)','Orthogonal distance regression (without error)'])
         self.Mehods_choice.setCurrentIndex(self.regression_methods)
         self.Mehods_choice.currentIndexChanged.connect(self.METHODS)
         
@@ -717,11 +753,13 @@ class Regression_PLOT_PyQt(QDialog):
         else:
             self.a,self.b,self.c = self.Minerals.PLOT_input_formula(return_fig=False)   
        
+        
+        
+        error1,error2,error3 = self.Minerals.Return_error()
             
-            
-        self.canvas1 = FigureCanvas3D(self.a)
-        self.canvas2 = FigureCanvas3D(self.b)
-        self.canvas3 = FigureCanvas3D(self.c)
+        self.canvas1 = FigureCanvas3D(self.a,error1)
+        self.canvas2 = FigureCanvas3D(self.b,error2)
+        self.canvas3 = FigureCanvas3D(self.c,error3)
         self.canvas1.mpl_connect('pick_event', self.onpick)
         self.canvas2.mpl_connect('pick_event', self.onpick)
         self.canvas3.mpl_connect('pick_event', self.onpick)
@@ -793,12 +831,23 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(olivine,flag='11111')
+    app = Regression_PLOT_PyQt(ringwoodite,flag='11111')
     app.show()
     sys.exit(qApp.exec_())        
     
- 
-#fig1,fig2,fig3=Olivine.PLOT()      
+    #olivine.PLOT()
+    if True:
+        Minerals = wadsleyte;cc=1;methods=2
+        Minerals.read_data()
+        a,b,c = Minerals.PLOT(return_fig=False,methods=methods)  
+        error1,error2,error3 = Minerals.Return_error()
+        if cc==1:
+            xxx = FigureCanvas3D(a,error1)
+        if cc==2:
+            xxx = FigureCanvas3D(b,error2)
+        if cc==3:
+            xxx = FigureCanvas3D(c,error3)
+        xxx.show()
 
 
 
