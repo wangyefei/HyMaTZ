@@ -33,7 +33,7 @@ from Mineral_Physics.regression import  (Regression_PLOT_PyQt,olivine,wadsleyte,
 from GUI_tools.wf_GUI_plot import (Test_Thread,wfQ_ApplicationWindow,MantleDlg)
 from GUI_tools.GUI_progressbar import Progressbar
 from GUI_cal_MP import Phase_diagram
-from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC#,Suzan_one,Suzan_nul,Suzan_ref
+from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC,Suzan_one,Suzan_nul,Suzan_ref
 #from GUI_Phase import  Phase_extract
 from GUI_Mineral_Params import Mineral_Params
 from GUI_treeview import GUI_tree
@@ -93,9 +93,9 @@ class MainWindow(QMainWindow):
         self.OLOL = None
         self.WAWA = None
         self.RIRI = None
-        self.olmethods=2
-        self.wamethods=2
-        self.rimethods=2
+        self.olmethods=1
+        self.wamethods=1
+        self.rimethods=1
 
         self.Discontinuity410=None
         self.Discontinuity520=None
@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
         i=0
         i+=1  
         self.label = QLabel()
-        self.label.setText("1. Select a model and click the 'Load Data for the Model' button. Alternatively, to specify a layers compositional model, check this box, click 'Load Data for the Model' and select the layers model with the pop-up window.:")
+        self.label.setText("1. Select a model and click the 'Load Data for the Model' button. Alternatively, to specify a layers compositional model, check this box, click 'Load Data for the Model' and select the layers model with the pop-up window.")
         self.label.setWordWrap(True)
         self.BTN_Minerals_layout.addWidget(self.label,i,0,1,5)
         self.Check_Layer = QCheckBox()
@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
         
         i+=1
         self.label = QLabel()
-        self.label.setText('4. If you want to modify the elastic properties of Mg<sub>2</sub>SiO<sub>4</sub> polymorphs with H<sub>2</sub>O, check this box:')
+        self.label.setText("4. When this box is checked (the default), the elastic properties of the Mg<sub>2</sub>SiO<sub>4</sub> polymorphs will be functions of the H<sub>2</sub>O content. Uncheck this box if you want a dry mantle.")
         self.label.setWordWrap(True)
         self.BTN_Minerals_layout.addWidget(self.label,i,0,1,5)        
         self.Check_water = QCheckBox()
@@ -307,7 +307,7 @@ class MainWindow(QMainWindow):
         i+=1
         self.label = QLabel()
         self.label.resize(100,50)
-        self.label.setText('Use the next pull-down menu to define the effect of water on Mg<sub>2</sub>SiO<sub>4</sub> phases:')
+        self.label.setText('Use this pull-down menu to enter your own function for the effect of water for a specific Mg<sub>2</sub>SiO<sub>4</sub> phases:')
         self.label.setWordWrap(True)
         self.BTN_Minerals_layout.addWidget(self.label,i,0,1,6)
         
@@ -376,7 +376,7 @@ class MainWindow(QMainWindow):
         i+=1
         self.label = QLabel()
         self.label.resize(100,50)
-        self.label.setText('Calculate Vp and Vs. Check this box to use a chosen attenuation function on the calculated velocities:')
+        self.label.setText('8. Calculate Vp and Vs. Check this box to use a chosen attenuation function on the calculated velocities:')
         self.label.setWordWrap(True)
         self.BTN_Minerals_layout.addWidget(self.label,i,0,1,5)   
         self.Check_attenuation = QCheckBox()
@@ -438,12 +438,10 @@ class MainWindow(QMainWindow):
         self.Plot_seismice_type.addItem('IASP91 (Kennett and Engdahl, 1991)')
         self.Plot_seismice_type.addItem('PEM-C (Dziewonski et al., 1975)' )
         self.Plot_seismice_type.addItem('User input')    
-#==============================================================================
-#         self.Plot_seismice_type.addItem('Na04')  
-#         self.Plot_seismice_type.addItem('Na04-ref')      
-#         self.Plot_seismice_type.addItem('Na04-1') 
-#         self.Plot_seismice_type.addItem('Na04-2') 
-#==============================================================================
+        self.Plot_seismice_type.addItem('Na04')  
+        self.Plot_seismice_type.addItem('Na04-ref')      
+        self.Plot_seismice_type.addItem('Na04-1') 
+        self.Plot_seismice_type.addItem('Na04-2') 
         self.Plot_seismice_type.setCurrentIndex(0)
         self.Plot_seismice_type.currentIndexChanged.connect(self.plot_seismic_type)
         self.BTN_Minerals_layout.addWidget(self.Plot_seismice_type,i,0,1,6)
