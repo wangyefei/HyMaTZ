@@ -55,7 +55,7 @@ class FigureCanvas3D(FigureCanvas):
     '''
     This class modify FigureCanvas from matplotlib package, and modify to show 3D plots
     '''
-    def __init__(self,input1,error):
+    def __init__(self,input1,error,error_show=True):
         x,y,z,a,b,c,d,strz,strx = input1
         
         x_error,y_error,z_error = error
@@ -84,7 +84,7 @@ class FigureCanvas3D(FigureCanvas):
 #                 pass
 #==============================================================================
                 
-        
+        lingspace = 2
         self.fig = Figure(dpi=70)
         #self.fig.suptitle("this is  the  figure  title",  fontsize=12)
         FigureCanvas.__init__(self, self.fig)
@@ -93,9 +93,13 @@ class FigureCanvas3D(FigureCanvas):
             QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.ax = Axes3D(self.fig) # Canvas figure must be created for mouse rotation
-        self.ellipsoid()
-        for i in range(len(X)):
-            self.ellipsoid(a=X[i],b=Y[i],c=Z[i],a_err=X_error[i],b_err=Y_error[i],c_err=Z_error[i])
+        #self.ax =self.fig.gca(projection='3d')
+        #self.ellipsoid()
+        if error_show == True:
+            for i in range(len(X)):
+                self.ellipsoid(a=X[i],b=Y[i],c=Z[i],a_err=X_error[i],b_err=Y_error[i],c_err=Z_error[i])
+        else:
+            pass
             
         self.ax.scatter3D(X,Y,Z,c='b', picker=5)   
         #print (X,Y,Z)        
@@ -105,17 +109,19 @@ class FigureCanvas3D(FigureCanvas):
         Z1=b*X1+c*Y1+d*X1*Y1+a
         self.ax.plot_surface(X1,Y1,Z1,color='r',alpha=0.1)
         #self.ax.plot_wireframe(X1,Y1,Z1,color='b')
-        self.ax.set_xlabel("Water Content (wt%)",fontdict=font)
-        self.ax.set_ylabel("Iron Content (mol%)",fontdict=font)#.set_fontsize(10)
-        self.ax.set_zlabel(strz,fontdict=font)
+        self.ax.set_xlabel("\nWater Content (wt%)",fontdict=font,linespacing=lingspace)
+        self.ax.set_ylabel("\nIron Content (mol%)",fontdict=font,linespacing=lingspace)#.set_fontsize(10)
+        self.ax.set_zlabel(strz,fontdict=font,linespacing=lingspace)
         self.fig.suptitle(strz,fontdict=font).set_fontsize(15)
         self.ax.set_xlim(0.9*np.amin(X),1.1*np.amax(X))
         self.ax.set_ylim(0.9*np.amin(Y),1.1*np.amax(Y))
         self.ax.set_zlim(0.9*np.amin(Z1),1.1*np.amax(Z1))
         self.ax.text2D(0.2,0.7,strx,transform=self.ax.transAxes)
+        #self.ax.xaxis._axinfo['label']['space_factor'] = 20
         
-        self.format_coord_org = self.ax.format_coord
-        self.ax.format_coord = self.report_pixel
+        
+        #self.format_coord_org = self.ax.format_coord
+        #self.ax.format_coord = self.report_pixel
         
     
     def report_pixel(self, xd, yd):
@@ -279,8 +285,22 @@ class Regression(object):
            # print ('dond odr eror')
             return res.beta, res.sd_beta  
         
+        elif methods==3:
+            data = Data([X,Y],Z,wd=[1,100])
+            def func(beta,data):
+                x,y = data
+                a,b,c = beta
+                return a*x+b*y+c    
+            model = Model(func)
+            odr = ODR(data, model,[100,100,100])
+            res = odr.run()
+            #print ('dond odr')
+            return res.beta, res.sd_beta          
+        
         else:
             raise ('wrong regression')
+            
+        
     
     
     def Clean_content(self):
@@ -343,6 +363,21 @@ class Regression(object):
         def Stinglist_float(string_list):
             number_list=[]
             
+            
+            def average(array):
+                num=0;sum1=1e-3
+                for i in array:
+                    try:
+                        sum1+=float(i)
+                        num+=1
+                    except:
+                        pass
+                if num == 0:
+                    print (array)
+                return sum1/num
+                    
+            
+            
             def string_float(string):
                 return_string = ''
                 for i in string:
@@ -356,7 +391,7 @@ class Regression(object):
                     except:
                         pass
                 if len(list1) ==1:
-                    list1.append(1e-2)
+                    list1.append('NA')
                 if len(list1) !=2:
                     #print ('wrong input',list1)
                     list1=['NA','NA']
@@ -366,7 +401,16 @@ class Regression(object):
                 list1 = string_float(i)
                 number_list.append(list1)
             aa=np.array(number_list)   
-            return aa[:,0],aa[:,1]              
+            
+            ave=average(aa[:,1])
+            
+            for i in range(len(aa[:,1])):
+                if aa[:,1][i] == 'NA':
+                    aa[:,1][i] = ave
+            
+            return aa[:,0],aa[:,1]        
+        
+        
         
         try:
             address=os.path.join(os.path.dirname(__file__),'EXPDATA',self.name+'.txt')
@@ -384,7 +428,6 @@ class Regression(object):
             dictionary[i]=[]    
         for line in file:
            line=line.split(',')
-           #print (line)
            for i in range(len(line)):  
 #==============================================================================
 #                try:
@@ -608,7 +651,7 @@ class Regression_PLOT_PyQt(QDialog):
         self.button1.setAutoDefault(False)    
         
         self.Mehods_choice = QComboBox()
-        self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (with error)','Orthogonal distance regression (without error)'])
+        self.Mehods_choice.addItems(['standard least squares','Orthogonal distance regression (with error)'])
         self.Mehods_choice.setCurrentIndex(self.regression_methods)
         self.Mehods_choice.currentIndexChanged.connect(self.METHODS)
         
@@ -831,24 +874,26 @@ ringwoodite=Regression('Ringwoodite')
 if __name__ == "__main__":
 
     qApp = QApplication(sys.argv)
-    app = Regression_PLOT_PyQt(ringwoodite,flag='11111')
+    app = Regression_PLOT_PyQt(ringwoodite,flag='')
     app.show()
     sys.exit(qApp.exec_())        
     
-    #olivine.PLOT()
-    if True:
-        Minerals = wadsleyte;cc=1;methods=2
-        Minerals.read_data()
-        a,b,c = Minerals.PLOT(return_fig=False,methods=methods)  
-        error1,error2,error3 = Minerals.Return_error()
-        if cc==1:
-            xxx = FigureCanvas3D(a,error1)
-        if cc==2:
-            xxx = FigureCanvas3D(b,error2)
-        if cc==3:
-            xxx = FigureCanvas3D(c,error3)
-        xxx.show()
-
+#==============================================================================
+#     #olivine.PLOT()
+#     if True:
+#         Minerals = wadsleyte;cc=1;methods=2
+#         Minerals.read_data()
+#         a,b,c = Minerals.PLOT(return_fig=False,methods=methods)  
+#         error1,error2,error3 = Minerals.Return_error()
+#         if cc==1:
+#             xxx = FigureCanvas3D(a,error1)
+#         if cc==2:
+#             xxx = FigureCanvas3D(b,error2)
+#         if cc==3:
+#             xxx = FigureCanvas3D(c,error3)
+#         xxx.show()
+# 
+#==============================================================================
 
 
 
