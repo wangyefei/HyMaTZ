@@ -53,7 +53,7 @@ from Mineral_Physics.attenuation import Anelastic
 #from na04.Na04 import NA04
 #from GUI_map import WorldMap
 
-__version__ = "2.1.0"
+__version__ = "2.1.2"
 
 #mpl.rcParams["figure.dpi"] = 1000
 class MainWindow(QMainWindow):
