@@ -497,12 +497,12 @@ class Regression(object):
         b11=beta[0];c11=beta[1];a11=beta[2];
         b12=abs(sd_beta[0]);c12=abs(sd_beta[1]);a12=abs(sd_beta[2]);
         if error == True:
-            string1=name + ' %5.2f(%5.2f)' %(a11,a12)
+            string1=name + ' %5.1f(%5.1f)' %(a11,a12)
             def plus_Minus(b11,b12):
                 if b11>=0:
-                    return '+%5.2f(%5.2f)' %(b11,b12)
+                    return '+%5.1f(%5.1f)' %(b11,b12)
                 else:
-                    return '%5.2f(%5.2f)' %(b11,b12)
+                    return '%5.1f(%5.1f)' %(b11,b12)
             string2=plus_Minus(b11,b12)
             string3=plus_Minus(c11,c12)
             
@@ -512,9 +512,9 @@ class Regression(object):
             string1='%.2f' %(a11)
             def plus_Minus(b11,b12):
                 if b11>=0:
-                    return '+%.2f' %(b11)
+                    return '+%.1f' %(b11)
                 else:
-                    return '%.2f' %(b11)
+                    return '%.1f' %(b11)
             string2=plus_Minus(b11,b12)
             string3=plus_Minus(c11,c12)
             if name == "K'":
