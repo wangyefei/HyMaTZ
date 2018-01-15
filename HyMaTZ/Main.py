@@ -33,7 +33,7 @@ from Mineral_Physics.regression import  (Regression_PLOT_PyQt,olivine,wadsleyte,
 from GUI_tools.wf_GUI_plot import (Test_Thread,wfQ_ApplicationWindow,MantleDlg)
 from GUI_tools.GUI_progressbar import Progressbar
 from GUI_cal_MP import Phase_diagram
-from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC#,Suzan_one,Suzan_nul,Suzan_ref
+from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC,Suzan_one,Suzan_nul,Suzan_ref
 #from GUI_Phase import  Phase_extract
 from GUI_Mineral_Params import Mineral_Params
 from GUI_treeview import GUI_tree
@@ -53,7 +53,7 @@ from Mineral_Physics.attenuation import Anelastic
 #from na04.Na04 import NA04
 #from GUI_map import WorldMap
 
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 
 #mpl.rcParams["figure.dpi"] = 1000
 class MainWindow(QMainWindow):
@@ -436,7 +436,7 @@ class MainWindow(QMainWindow):
         self.Plot_seismice_type.addItem('Choose One')
         self.Plot_seismice_type.addItem('Clean')
         self.Plot_seismice_type.addItem('PREM (Dziewonski and Anderson, 1981)')
-        self.Plot_seismice_type.addItem('AK135 (Kennett, Engdahl and Buland,1995) ')
+        self.Plot_seismice_type.addItem('ak135 (Kennett, Engdahl and Buland,1995) ')
         self.Plot_seismice_type.addItem('IASP91 (Kennett and Engdahl, 1991)')
         self.Plot_seismice_type.addItem('PEM-C (Dziewonski et al., 1975)' )
         self.Plot_seismice_type.addItem('User input')
@@ -784,6 +784,7 @@ class MainWindow(QMainWindow):
         sum1 = sum(self.Model_weight_composition)
         self.Model_weight_composition /= sum1/100
 
+        self.message += 'Bulk composition in [mol%/wt%]: '
         for i in range(6):
             self.message += list1[i]
             self.message += ' ['
@@ -791,16 +792,18 @@ class MainWindow(QMainWindow):
             self.message += '/'
             self.message += "{0:.2f}".format((self.Model_weight_composition[i]))
             self.message += ']; '
-        self.message += 'Bulk composition in mol%/wt%'
+        #self.message += 'Bulk composition in mol%/wt%'
         self.status.showMessage(self.message)
         self.model_choice=self.Type
         return self.Type
 
 
     def Select_Model(self):
+        
         if self.Check_Layer.isChecked() is False:
             self.BTN_Mantle_cambo.setEnabled(True)
-            self.BTN_Mantle_cambo.setCurrentIndex(0)
+            #self.BTN_Mantle_cambo.setCurrentIndex(0)
+            #self.status.showMessage(' ')
             self.progress = QProgressDialog("Running","Cancel",0,30,self)
             self.progress.setWindowTitle('Please wait...')
             self.progress.setWindowModality(Qt.WindowModal)
@@ -834,6 +837,7 @@ class MainWindow(QMainWindow):
             for i in range(16,30):
                 self.progress.setValue(i)
             self.progress.close()
+            #self.status.showMessage(self.message)
         else:
             try:
                 layer_depth,layer_name,layer_number = self.LayersDialog.Return()
@@ -860,8 +864,10 @@ class MainWindow(QMainWindow):
             for i in range(16,30):
                 self.progress.setValue(i)
             self.progress.close()
+            #self.status.showMessage(self.message)
             self.model_choice ='Layer'
             self.sys.Import_layer(self.layers)
+            
 
 
 
