@@ -273,6 +273,8 @@ class Regression(object):
         
         elif methods ==1:
 
+            if sum(X_error)==0 or sum(Y_error)==0 or sum(Z_error)==0:
+                return None
             data=RealData([X,Y],Z,sx=[X_error,Y_error],sy=Z_error)
             #data = Data([X,Y],Z,wd=[1,100])
             def func(beta,data):
