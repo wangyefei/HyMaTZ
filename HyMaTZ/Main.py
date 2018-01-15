@@ -33,7 +33,7 @@ from Mineral_Physics.regression import  (Regression_PLOT_PyQt,olivine,wadsleyte,
 from GUI_tools.wf_GUI_plot import (Test_Thread,wfQ_ApplicationWindow,MantleDlg)
 from GUI_tools.GUI_progressbar import Progressbar
 from GUI_cal_MP import Phase_diagram
-from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC,Suzan_one,Suzan_nul,Suzan_ref
+from Seismic.Seismic import PREM_Suzan,AK135,IASP91,PEMC#,Suzan_one,Suzan_nul,Suzan_ref
 #from GUI_Phase import  Phase_extract
 from GUI_Mineral_Params import Mineral_Params
 from GUI_treeview import GUI_tree
@@ -2339,10 +2339,13 @@ ray theory, due to water content and iron content in the nominally anhydrous min
 
 
 if __name__ == "__main__":
-    print (os.path.dirname(os.path.realpath(__file__)))
+    if not QApplication.instance():
+        app = QApplication(sys.argv)
+    else:
+        app = QApplication.instance() 
     #from Mineral_Physics.Solidsolution import c2c ,CF,Cpx,Gt,Aki,Wus,O,Opx,Pl,Ppv,Pv,Ring,Sp,Wad
-    qapp = QApplication(sys.argv)
+    #qapp = QApplication(sys.argv)
     GUI = MainWindow()
     GUI.show()
-    sys.exit(qapp.exec_())
+    app.exec_()
     #Phase_diagram = np.array(GUI.BTN.sys.Phase_diagram)
