@@ -1863,8 +1863,8 @@ class MainWindow(QMainWindow):
         fileQuitAction = self.createAction("&Quit", self.fileClose,
                 "Ctrl+Q", "filequit", "Close the application")
 
-        fileview = self.createAction("&View/Modify Thermodynamics Data", self.mineral_params,
-                 "View/Modify Thermodynamics Data", "View/Modify Thermodynamics Data")
+        fileview = self.createAction("&View Thermodynamics Data", self.mineral_params,
+                 "View Thermodynamics Data", "View Thermodynamics Data")
         fileEdit = self.createAction("&Mineral Plot", self.Mineralplot,
                  "Mineral plot", "Mineral plot")
         fileTemperatureEdit = self.createAction("&Change temperature profile", self.ChangeTemperature,
