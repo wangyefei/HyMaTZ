@@ -71,7 +71,7 @@ class Mineral_Params(QDialog,QTableView):
 
         
     def BTN(self):
-        
+        return 0
         self.Update = QPushButton(self)
         self.Update.setText("Update")
         self.Update.clicked.connect(self.update_data)
