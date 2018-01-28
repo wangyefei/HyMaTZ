@@ -702,38 +702,41 @@ class MainWindow(QMainWindow):
             self.savemessage = '10%molHarzburgite + 90%molBasalt (Xu et al. 2008) '
             Harzburgite_precentage = 0.1
             self.Model_composition = Harzburgite_precentage*Harzburgite + (1-Harzburgite_precentage)*Basalt
+                                                                          
+#==============================================================================
+#         if a ==15:
+#             self.Type = 'Pyrolite1'
+#             self.message = 'Pyrolite1 (McDonough and Sun, 1995) '
+#             self.savemessage = 'Pyrolite1 (McDonough and Sun, 1995) '
+#             self.Model_composition = np.array([  3.31,2.28,0.30,49.06,5.86,39.18])
+#         if a ==16:
+#             self.Type = 'Pyrolite2'
+#             self.message = 'Pyrolite2 (Jagoutz et al., 1979) '
+#             self.savemessage = 'Pyrolite2 (Jagoutz et al., 1979) '
+#             self.Model_composition = np.array([  3.25,2.03,0.27,49.56,5.67,39.19])
+#         if a ==17:
+#             self.Type = 'Pyrolite3'
+#             self.message = 'Pyrolite3 (Green et al., 1979) '
+#             self.savemessage = 'Pyrolite3 (Green et al., 1979) '
+#             self.Model_composition = np.array([  3.14,2.23,0.33,49.94,5.48,38.85])
+#         if a ==18:
+#             self.Type = 'Pyrolite4'
+#             self.message = 'Pyrolite4 (Taylor and McLennan, 1985) '
+#             self.savemessage = 'Pyrolite4 (Taylor and McLennan, 1985) '
+#             self.Model_composition = np.array([  2.71,1.87,0.28, 45.73,5.83,43.55])
+# 
+#         if a ==19:
+#             self.Type = 'Pyrolite5'
+#             self.message = 'Pyrolite5 (Ringwoode, 1962) '
+#             self.savemessage = 'Pyrolite5 (Ringwoode, 1962) '
+#             self.Model_composition = np.array([  2.90,1.82,0.50, 48.96,6.22,39.58])
+#==============================================================================
+
         if a ==15:
-            self.Type = 'Pyrolite1'
-            self.message = 'Pyrolite1 (McDonough and Sun, 1995) '
-            self.savemessage = 'Pyrolite1 (McDonough and Sun, 1995) '
-            self.Model_composition = np.array([  3.31,2.28,0.30,49.06,5.86,39.18])
-        if a ==16:
-            self.Type = 'Pyrolite2'
-            self.message = 'Pyrolite2 (Jagoutz et al., 1979) '
-            self.savemessage = 'Pyrolite2 (Jagoutz et al., 1979) '
-            self.Model_composition = np.array([  3.25,2.03,0.27,49.56,5.67,39.19])
-        if a ==17:
-            self.Type = 'Pyrolite3'
-            self.message = 'Pyrolite3 (Green et al., 1979) '
-            self.savemessage = 'Pyrolite3 (Green et al., 1979) '
-            self.Model_composition = np.array([  3.14,2.23,0.33,49.94,5.48,38.85])
-        if a ==18:
-            self.Type = 'Pyrolite4'
-            self.message = 'Pyrolite4 (Taylor and McLennan, 1985) '
-            self.savemessage = 'Pyrolite4 (Taylor and McLennan, 1985) '
-            self.Model_composition = np.array([  2.71,1.87,0.28, 45.73,5.83,43.55])
-
-        if a ==19:
-            self.Type = 'Pyrolite5'
-            self.message = 'Pyrolite5 (Ringwoode, 1962) '
-            self.savemessage = 'Pyrolite5 (Ringwoode, 1962) '
-            self.Model_composition = np.array([  2.90,1.82,0.50, 48.96,6.22,39.58])
-
-        if a ==20:
             self.Type = 'Input'
             self.message = 'User Input '
             self.savemessage = 'User Input '
-            self.Model_composition = np.array([  2.90,1.82,0.50, 48.96,6.22,39.58])
+            self.Model_composition = np.array([  0,0,0,0,0,0])
 
 #==============================================================================
 #         if a ==21:
@@ -814,7 +817,14 @@ class MainWindow(QMainWindow):
                 self.progress.setValue(i)
             self.progress.deleteLater()
             if self.Type == 'Input':
-                address_input, _  = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+                print ('input')
+                #address_input, _  = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+                address_input = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+                if PYQT == 5:
+                    address_input = address_input[0]
+                else:
+                    pass        
+                print (address_input)
                 address_output2 = address_input[:-5]+'_2.txt'
                 address_output3 = address_input[:-5]+'_3.txt'
                 Extrac_data(address_input,address_output2,address_output3)
