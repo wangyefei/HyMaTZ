@@ -200,7 +200,7 @@ class Stix(Mineral):
         name=self.name
         formuala = self.formula
         F_0=self.F_0
-        V_0=self.V_0*1e5
+        V_0=self.V_0*1e6
         K_0=self.K_0/1e9
         Kprime_0=self.Kprime_0
         Debye_0=self.Debye_0
@@ -222,7 +222,7 @@ class Stix(Mineral):
             formuala = self.formula
                 
             F_0=self.random_gaussian(self.F_0, self.uncertainties['err_F_0'])           
-            V_0=(self.random_gaussian(self.V_0, self.uncertainties['err_V_0']))*1e5
+            V_0=(self.random_gaussian(self.V_0, self.uncertainties['err_V_0']))*1e6
             K_0=(self.random_gaussian(self.K_0, self.uncertainties['err_K_0']))/1e9
             Kprime_0=self.random_gaussian(self.Kprime_0, self.uncertainties['err_K_prime_0'])
             Debye_0=self.random_gaussian(self.Debye_0, self.uncertainties['err_Debye_0'])
@@ -236,7 +236,7 @@ class Stix(Mineral):
             name=self.name
             formuala = self.formula
             F_0=self.F_0+random.uniform(-1, 1)*self.uncertainties['err_F_0']
-            V_0=(self.V_0+random.random()*self.uncertainties['err_V_0'])*1e5
+            V_0=(self.V_0+random.random()*self.uncertainties['err_V_0'])*1e6
             K_0=(self.K_0+random.random()*self.uncertainties['err_K_0'])/1e9
             Kprime_0=self.Kprime_0+random.uniform(-1, 1)*self.uncertainties['err_K_prime_0']
             Debye_0=self.Debye_0+random.uniform(-1, 1)*self.uncertainties['err_Debye_0']
@@ -261,7 +261,7 @@ class Stix(Mineral):
         '''
         return volume at 1 Atm and 298K unit: cm3 mol− 1 
         '''
-        return self.V_0*1e5
+        return self.V_0*1e6
 
         
     def change_parameters(self,parms_list):
@@ -270,7 +270,7 @@ class Stix(Mineral):
         '''
         self.name = parms_list[0]
         #formula = parms_list[1]
-        self.V_0=float(parms_list[6])/1e5
+        self.V_0=float(parms_list[6])/1e6
         self.K_0=float(parms_list[7])*1e9
         self.Kprime_0=float(parms_list[8])
         self.Debye_0=float(parms_list[9])
